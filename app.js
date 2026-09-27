@@ -119,7 +119,8 @@ function renderBook(book) {
   const title = document.createElement('strong');
   title.textContent = book.title;
   const meta = document.createElement('span');
-  meta.textContent = [book.author || '—', book.isbn && `ISBN ${book.isbn}`].filter(Boolean).join(' · ');
+  meta.textContent = [book.author || '—', book.pages && `${book.pages} Seiten`, book.isbn && `ISBN ${book.isbn}`]
+    .filter(Boolean).join(' · ');
   info.append(title, meta);
 
   const tag = (label, on, onClick) => {
@@ -171,6 +172,7 @@ function startEdit(book) {
   $('cover-url').value = book.coverUrl || '';
   $('title').value = book.title;
   $('author').value = book.author;
+  $('pages').value = book.pages || '';
   $('owned').checked = book.owned;
   $('read').checked = book.read;
   $('read-at').value = book.readAt || '';
@@ -210,14 +212,32 @@ async function fetchResponse(url) {
 const fetchJson = async (url) => (await fetchResponse(url)).json();
 const fetchText = async (url) => (await fetchResponse(url)).text();
 
+// "XII, 320 Seiten" → 320
+function parsePages(text) {
+  const match = String(text || '').match(/(\d+)\s*(?:Seiten|S\.|p\.|pages)/i) || String(text || '').match(/\d+/);
+  const pages = match ? Number(match[1] ?? match[0]) : NaN;
+  return pages > 0 ? pages : null;
+}
+
+const GOOGLE_KEY_STORAGE = 'mylib.googleApiKey';
+function googleApiKey() {
+  try {
+    return localStorage.getItem(GOOGLE_KEY_STORAGE) || '';
+  } catch {
+    return '';
+  }
+}
+
 const ISBN_SOURCES = [
   {
     name: 'Google Books',
     async lookup(isbn) {
-      const info = (await fetchJson(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)).items?.[0]?.volumeInfo;
+      const key = googleApiKey();
+      const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}` + (key ? `&key=${encodeURIComponent(key)}` : '');
+      const info = (await fetchJson(url)).items?.[0]?.volumeInfo;
       if (!info?.title) return null;
       const cover = (info.imageLinks?.thumbnail || '').replace(/^http:/, 'https:');
-      return { title: info.title, author: (info.authors || []).join(', '), cover };
+      return { title: info.title, author: (info.authors || []).join(', '), cover, pages: info.pageCount || null };
     },
   },
   {
@@ -238,14 +258,15 @@ const ISBN_SOURCES = [
       const title = subfield('245', 'a');
       if (!title) return null;
       const author = subfield('100', 'a') || subfield('110', 'a');
-      return { title, author: author.split(', ').reverse().join(' ') };
+      return { title, author: author.split(', ').reverse().join(' '), pages: parsePages(subfield('300', 'a')) };
     },
   },
   {
     name: 'Open Library',
     async lookup(isbn) {
-      const doc = (await fetchJson(`https://openlibrary.org/search.json?isbn=${isbn}&fields=title,author_name&limit=1`)).docs?.[0];
-      return doc?.title ? { title: doc.title, author: (doc.author_name || []).join(', ') } : null;
+      const doc = (await fetchJson(`https://openlibrary.org/search.json?isbn=${isbn}&fields=title,author_name,number_of_pages_median&limit=1`)).docs?.[0];
+      if (!doc?.title) return null;
+      return { title: doc.title, author: (doc.author_name || []).join(', '), pages: doc.number_of_pages_median || null };
     },
   },
   {
@@ -258,7 +279,8 @@ const ISBN_SOURCES = [
         .map((c) => c.agent?.label)
         .filter(Boolean)
         .map((name) => name.split(', ').reverse().join(' '));
-      return { title: item.title, author: authors.join(', ') };
+      const extent = Array.isArray(item.extent) ? item.extent[0] : item.extent;
+      return { title: item.title, author: authors.join(', '), pages: parsePages(extent) };
     },
   },
 ];
@@ -290,6 +312,9 @@ async function lookupIsbn() {
   $('title').value = found.title;
   $('author').value = found.author;
   $('cover-url').value = found.cover || '';
+  // Fehlt die Seitenzahl in der gewählten Quelle, aus einer anderen übernehmen.
+  const pages = found.pages || results.find((r) => r.status === 'fulfilled' && r.value?.pages)?.value.pages;
+  $('pages').value = pages || '';
   status.textContent = `Gefunden über ${ISBN_SOURCES[hit].name} ✓`;
 }
 
@@ -313,6 +338,7 @@ $('book-form').addEventListener('submit', (e) => {
     isbn: normalizeIsbn($('isbn').value),
     title: $('title').value.trim(),
     author: $('author').value.trim(),
+    pages: Number($('pages').value) || null,
   };
   if (!data.title) return;
 
@@ -375,3 +401,13 @@ if ('serviceWorker' in navigator) {
 }
 // Den Browser bitten, die gespeicherten Bücher nicht automatisch zu löschen.
 navigator.storage?.persist?.().catch(() => {});
+
+// Optionaler eigener Google-Books-Schlüssel (nur auf diesem Gerät gespeichert).
+$('google-key').value = googleApiKey();
+$('google-key').addEventListener('change', () => {
+  try {
+    localStorage.setItem(GOOGLE_KEY_STORAGE, $('google-key').value.trim());
+  } catch {
+    alert('Speichern fehlgeschlagen.');
+  }
+});

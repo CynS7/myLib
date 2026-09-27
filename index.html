@@ -32,6 +32,7 @@
       <div class="row">
         <input id="title" placeholder="Titel" required>
         <input id="author" placeholder="Autor">
+        <input id="pages" type="number" min="1" inputmode="numeric" placeholder="Seiten">
       </div>
       <div class="row" id="edit-fields" hidden>
         <label><input type="checkbox" id="owned"> Besitze ich</label>
@@ -60,8 +61,14 @@
     <footer>
       <button type="button" id="export-btn">Exportieren</button>
       <label class="import">Importieren<input type="file" id="import-file" accept="application/json" hidden></label>
-      <span class="version">Version 5</span>
+      <span class="version">Version 6</span>
     </footer>
+
+    <details class="settings">
+      <summary>Einstellungen</summary>
+      <label for="google-key">Google-Books-API-Schlüssel (optional)</label>
+      <input id="google-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…">
+    </details>
   </main>
 
   <script src="app.js"></script>

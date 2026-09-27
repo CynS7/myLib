@@ -1,6 +1,6 @@
 // Offline-Unterstützung: App-Dateien werden zwischengespeichert.
 // Online wird immer die neueste Version geladen, offline die gespeicherte.
-const CACHE = 'mylib-v5';
+const CACHE = 'mylib-v6';
 const APP_FILES = [
   './',
   'index.html',
