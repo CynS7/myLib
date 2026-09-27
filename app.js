@@ -139,19 +139,52 @@ function resetForm() {
   $('cancel-btn').hidden = true;
 }
 
-async function lookupGoogle(isbn) {
-  const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
-  if (!res.ok) return null;
-  const info = (await res.json()).items?.[0]?.volumeInfo;
-  return info && { title: info.title, author: (info.authors || []).join(', ') };
+// Jede Quelle liefert { title, author } oder null (nicht gefunden) und wirft bei Fehlern.
+async function fetchJson(url) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal });
+    if (!res.ok) throw new Error(res.status === 429 ? 'Limit erreicht' : `HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    if (err.name === 'AbortError') throw new Error('Zeitüberschreitung');
+    if (err instanceof TypeError) throw new Error('nicht erreichbar');
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-async function lookupOpenLibrary(isbn) {
-  const res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
-  if (!res.ok) return null;
-  const info = (await res.json())[`ISBN:${isbn}`];
-  return info && { title: info.title, author: (info.authors || []).map((a) => a.name).join(', ') };
-}
+const ISBN_SOURCES = [
+  {
+    name: 'Google Books',
+    async lookup(isbn) {
+      const info = (await fetchJson(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)).items?.[0]?.volumeInfo;
+      return info?.title ? { title: info.title, author: (info.authors || []).join(', ') } : null;
+    },
+  },
+  {
+    name: 'Open Library',
+    async lookup(isbn) {
+      const doc = (await fetchJson(`https://openlibrary.org/search.json?isbn=${isbn}&fields=title,author_name&limit=1`)).docs?.[0];
+      return doc?.title ? { title: doc.title, author: (doc.author_name || []).join(', ') } : null;
+    },
+  },
+  {
+    // Deutscher Bibliotheksverbund (hbz) – gut für deutschsprachige Bücher.
+    name: 'lobid',
+    async lookup(isbn) {
+      const item = (await fetchJson(`https://lobid.org/resources/search?q=isbn:${isbn}&format=json&size=1`)).member?.[0];
+      if (!item?.title) return null;
+      const authors = (item.contribution || [])
+        .map((c) => c.agent?.label)
+        .filter(Boolean)
+        .map((name) => name.split(', ').reverse().join(' '));
+      return { title: item.title, author: authors.join(', ') };
+    },
+  },
+];
 
 async function lookupIsbn() {
   const isbn = normalizeIsbn($('isbn').value);
@@ -162,22 +195,24 @@ async function lookupIsbn() {
     return;
   }
   status.textContent = 'Suche …';
-  let found = null;
-  for (const lookup of [lookupGoogle, lookupOpenLibrary]) {
-    try {
-      found = await lookup(isbn);
-    } catch {
-      found = null;
-    }
-    if (found) break;
-  }
-  if (!found) {
-    status.textContent = 'Kein Buch zu dieser ISBN gefunden – bitte Titel und Autor selbst eintragen.';
+  $('lookup-btn').disabled = true;
+
+  // Alle Quellen gleichzeitig abfragen, Ergebnis nach Reihenfolge der Quellen wählen.
+  const results = await Promise.allSettled(ISBN_SOURCES.map((s) => s.lookup(isbn)));
+  $('lookup-btn').disabled = false;
+
+  const hit = results.findIndex((r) => r.status === 'fulfilled' && r.value);
+  if (hit === -1) {
+    const details = results
+      .map((r, i) => `${ISBN_SOURCES[i].name}: ${r.status === 'rejected' ? r.reason.message : 'nicht gefunden'}`)
+      .join(' · ');
+    status.textContent = `Kein Buch gefunden – bitte Titel und Autor selbst eintragen. (${details})`;
     return;
   }
+  const found = results[hit].value;
   $('title').value = found.title;
   $('author').value = found.author;
-  status.textContent = 'Gefunden ✓';
+  status.textContent = `Gefunden über ${ISBN_SOURCES[hit].name} ✓`;
 }
 
 $('lookup-btn').addEventListener('click', lookupIsbn);
