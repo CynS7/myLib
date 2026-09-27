@@ -140,13 +140,13 @@ function resetForm() {
 }
 
 // Jede Quelle liefert { title, author } oder null (nicht gefunden) und wirft bei Fehlern.
-async function fetchJson(url) {
+async function fetchResponse(url) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 10000);
   try {
     const res = await fetch(url, { signal: ctrl.signal });
     if (!res.ok) throw new Error(res.status === 429 ? 'Limit erreicht' : `HTTP ${res.status}`);
-    return await res.json();
+    return res;
   } catch (err) {
     if (err.name === 'AbortError') throw new Error('Zeitüberschreitung');
     if (err instanceof TypeError) throw new Error('nicht erreichbar');
@@ -156,12 +156,36 @@ async function fetchJson(url) {
   }
 }
 
+const fetchJson = async (url) => (await fetchResponse(url)).json();
+const fetchText = async (url) => (await fetchResponse(url)).text();
+
 const ISBN_SOURCES = [
   {
     name: 'Google Books',
     async lookup(isbn) {
       const info = (await fetchJson(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)).items?.[0]?.volumeInfo;
       return info?.title ? { title: info.title, author: (info.authors || []).join(', ') } : null;
+    },
+  },
+  {
+    // Deutsche Nationalbibliothek – enthält praktisch alle in Deutschland erschienenen Bücher.
+    name: 'DNB',
+    async lookup(isbn) {
+      const url = 'https://services.dnb.de/sru/dnb?version=1.1&operation=searchRetrieve'
+        + `&query=num%3D${isbn}&recordSchema=MARC21-xml&maximumRecords=1`;
+      const xml = new DOMParser().parseFromString(await fetchText(url), 'application/xml');
+      const record = xml.getElementsByTagNameNS('*', 'record')[0];
+      if (!record) return null;
+      const subfield = (tag, code) => {
+        const field = [...record.getElementsByTagNameNS('*', 'datafield')].find((f) => f.getAttribute('tag') === tag);
+        const sub = field && [...field.getElementsByTagNameNS('*', 'subfield')].find((s) => s.getAttribute('code') === code);
+        // Nichtsortierzeichen und abschließende Katalog-Satzzeichen entfernen.
+        return (sub?.textContent || '').replace(/[\u0098\u009c]/g, '').replace(/\s*[:/;,]\s*$/, '').trim();
+      };
+      const title = subfield('245', 'a');
+      if (!title) return null;
+      const author = subfield('100', 'a') || subfield('110', 'a');
+      return { title, author: author.split(', ').reverse().join(' ') };
     },
   },
   {
