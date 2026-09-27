@@ -15,21 +15,33 @@
   <main>
     <form id="book-form" autocomplete="off">
       <input type="hidden" id="book-id">
-      <input id="title" placeholder="Titel" required>
-      <input id="author" placeholder="Autor">
-      <label><input type="checkbox" id="owned" checked> Besitze ich</label>
-      <label><input type="checkbox" id="read"> Gelesen</label>
-      <button type="submit" id="submit-btn">Hinzufügen</button>
-      <button type="button" id="cancel-btn" hidden>Abbrechen</button>
+      <div class="row">
+        <input id="isbn" placeholder="ISBN" inputmode="numeric">
+        <button type="button" id="lookup-btn">ISBN suchen</button>
+      </div>
+      <p id="lookup-status" class="hint" hidden></p>
+      <div class="row">
+        <input id="title" placeholder="Titel" required>
+        <input id="author" placeholder="Autor">
+      </div>
+      <div class="row" id="edit-fields" hidden>
+        <label><input type="checkbox" id="owned"> Besitze ich</label>
+        <label><input type="checkbox" id="read"> Gelesen am</label>
+        <input type="date" id="read-at">
+      </div>
+      <div class="row">
+        <button type="submit" id="submit-btn">Auf Wunschliste setzen</button>
+        <button type="button" id="cancel-btn" hidden>Abbrechen</button>
+      </div>
     </form>
 
     <div class="toolbar">
-      <input id="search" type="search" placeholder="Suchen …">
+      <input id="search" type="search" placeholder="Suchen nach Titel, Autor oder ISBN …">
       <select id="filter">
         <option value="all">Alle</option>
-        <option value="read">Gelesen</option>
+        <option value="wishlist">Wunschliste</option>
         <option value="unread-owned">Besitze, ungelesen</option>
-        <option value="not-owned">Nicht im Besitz</option>
+        <option value="read">Gelesen</option>
       </select>
     </div>
 
