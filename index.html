@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <title>myLib – Meine Bücher</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="src/ui/style.css">
 </head>
 <body>
   <header>
@@ -61,7 +61,7 @@
     <footer>
       <button type="button" id="export-btn">Exportieren</button>
       <label class="import">Importieren<input type="file" id="import-file" accept="application/json" hidden></label>
-      <span class="version">Version 6</span>
+      <span class="version">Version 7</span>
     </footer>
 
     <details class="settings">
@@ -71,6 +71,6 @@
     </details>
   </main>
 
-  <script src="app.js"></script>
+  <script type="module" src="src/ui/main.js"></script>
 </body>
 </html>
