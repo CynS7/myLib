@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>myLib – Meine Bücher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>📚 myLib</h1>
+    <p id="stats"></p>
+  </header>
+
+  <main>
+    <form id="book-form" autocomplete="off">
+      <input type="hidden" id="book-id">
+      <input id="title" placeholder="Titel" required>
+      <input id="author" placeholder="Autor">
+      <label><input type="checkbox" id="owned" checked> Besitze ich</label>
+      <label><input type="checkbox" id="read"> Gelesen</label>
+      <button type="submit" id="submit-btn">Hinzufügen</button>
+      <button type="button" id="cancel-btn" hidden>Abbrechen</button>
+    </form>
+
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Suchen …">
+      <select id="filter">
+        <option value="all">Alle</option>
+        <option value="read">Gelesen</option>
+        <option value="unread-owned">Besitze, ungelesen</option>
+        <option value="not-owned">Nicht im Besitz</option>
+      </select>
+    </div>
+
+    <ul id="book-list"></ul>
+    <p id="empty" hidden>Keine Bücher gefunden.</p>
+
+    <footer>
+      <button type="button" id="export-btn">Exportieren</button>
+      <label class="import">Importieren<input type="file" id="import-file" accept="application/json" hidden></label>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
