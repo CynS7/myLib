@@ -67,7 +67,16 @@ button[type="submit"] { background: var(--accent); color: #fff; border-color: va
   padding: 10px 12px;
   margin-bottom: 8px;
 }
-.info { flex: 1 1 200px; min-width: 0; }
+.cover {
+  flex: 0 0 48px;
+  height: 72px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+.cover img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; }
+.cover.loaded img { opacity: 1; }
+.info { flex: 1 1 160px; min-width: 0; }
 .info strong { display: block; overflow-wrap: anywhere; }
 .info span { color: var(--muted); font-size: .9em; }
 .tag {

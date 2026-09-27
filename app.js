@@ -62,6 +62,41 @@ function setRead(book, read) {
   book.readAt = read ? book.readAt || today() : null;
 }
 
+// Mögliche Cover-Adressen, in dieser Reihenfolge ausprobiert.
+function coverCandidates(book) {
+  if (!book.isbn) return [];
+  return [
+    book.coverUrl,
+    `https://portal.dnb.de/opac/mvb/cover?isbn=${book.isbn}`,
+    `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg?default=false`,
+  ].filter(Boolean);
+}
+
+function renderCover(book) {
+  const box = document.createElement('div');
+  box.className = 'cover';
+  const candidates = coverCandidates(book);
+  if (!candidates.length) return box;
+
+  const img = document.createElement('img');
+  img.alt = '';
+  img.loading = 'lazy';
+  let i = 0;
+  const next = () => {
+    if (i < candidates.length) img.src = candidates[i++];
+    else img.remove();
+  };
+  img.onerror = next;
+  // Manche Dienste liefern statt eines Fehlers ein winziges Platzhalterbild.
+  img.onload = () => {
+    if (img.naturalWidth < 10) next();
+    else box.classList.add('loaded');
+  };
+  next();
+  box.append(img);
+  return box;
+}
+
 function renderBook(book) {
   const li = document.createElement('li');
 
@@ -112,13 +147,14 @@ function renderBook(book) {
   };
   actions.append(edit, del);
 
-  li.append(info, badges, actions);
+  li.append(renderCover(book), info, badges, actions);
   return li;
 }
 
 function startEdit(book) {
   $('book-id').value = book.id;
   $('isbn').value = book.isbn || '';
+  $('cover-url').value = book.coverUrl || '';
   $('title').value = book.title;
   $('author').value = book.author;
   $('owned').checked = book.owned;
@@ -133,6 +169,7 @@ function startEdit(book) {
 function resetForm() {
   $('book-form').reset();
   $('book-id').value = '';
+  $('cover-url').value = '';
   $('edit-fields').hidden = true;
   $('lookup-status').hidden = true;
   $('submit-btn').textContent = 'Auf Wunschliste setzen';
@@ -164,7 +201,9 @@ const ISBN_SOURCES = [
     name: 'Google Books',
     async lookup(isbn) {
       const info = (await fetchJson(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)).items?.[0]?.volumeInfo;
-      return info?.title ? { title: info.title, author: (info.authors || []).join(', ') } : null;
+      if (!info?.title) return null;
+      const cover = (info.imageLinks?.thumbnail || '').replace(/^http:/, 'https:');
+      return { title: info.title, author: (info.authors || []).join(', '), cover };
     },
   },
   {
@@ -236,10 +275,13 @@ async function lookupIsbn() {
   const found = results[hit].value;
   $('title').value = found.title;
   $('author').value = found.author;
+  $('cover-url').value = found.cover || '';
   status.textContent = `Gefunden über ${ISBN_SOURCES[hit].name} ✓`;
 }
 
 $('lookup-btn').addEventListener('click', lookupIsbn);
+// Ein gespeichertes Cover gehört zur alten ISBN.
+$('isbn').addEventListener('input', () => { $('cover-url').value = ''; });
 $('isbn').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); lookupIsbn(); }
 });
@@ -263,7 +305,7 @@ $('book-form').addEventListener('submit', (e) => {
   const id = $('book-id').value;
   if (id) {
     const book = books.find((b) => b.id === id);
-    Object.assign(book, data, { owned: $('owned').checked });
+    Object.assign(book, data, { owned: $('owned').checked, coverUrl: $('cover-url').value || null });
     setRead(book, $('read').checked);
     if (book.read && $('read-at').value) book.readAt = $('read-at').value;
   } else {
@@ -272,6 +314,7 @@ $('book-form').addEventListener('submit', (e) => {
       id: crypto.randomUUID(),
       addedAt: new Date().toISOString(),
       ...data,
+      coverUrl: $('cover-url').value || null,
       owned: false,
       read: false,
       readAt: null,
