@@ -63,11 +63,23 @@ function setRead(book, read) {
 }
 
 // Mögliche Cover-Adressen, in dieser Reihenfolge ausprobiert.
+function isbn13to10(isbn) {
+  if (isbn.length === 10) return isbn;
+  if (!isbn.startsWith('978')) return null;
+  const core = isbn.slice(3, 12);
+  const sum = [...core].reduce((acc, d, i) => acc + Number(d) * (10 - i), 0);
+  const check = (11 - (sum % 11)) % 11;
+  return core + (check === 10 ? 'X' : String(check));
+}
+
 function coverCandidates(book) {
   if (!book.isbn) return [];
+  const isbn10 = isbn13to10(book.isbn);
   return [
     book.coverUrl,
     `https://portal.dnb.de/opac/mvb/cover?isbn=${book.isbn}`,
+    `https://www.buchhandel.de/cover/${book.isbn}/${book.isbn}-cover-m.jpg`,
+    isbn10 && `https://images-na.ssl-images-amazon.com/images/P/${isbn10}.01.LZZZZZZZ.jpg`,
     `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg?default=false`,
   ].filter(Boolean);
 }
@@ -81,6 +93,8 @@ function renderCover(book) {
   const img = document.createElement('img');
   img.alt = '';
   img.loading = 'lazy';
+  // Einige Cover-Dienste blockieren Bilder, die von fremden Seiten eingebunden werden.
+  img.referrerPolicy = 'no-referrer';
   let i = 0;
   const next = () => {
     if (i < candidates.length) img.src = candidates[i++];
@@ -357,7 +371,7 @@ render();
 
 // Als App installierbar und offline nutzbar machen.
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
 }
 // Den Browser bitten, die gespeicherten Bücher nicht automatisch zu löschen.
 navigator.storage?.persist?.().catch(() => {});

@@ -1,6 +1,6 @@
 // Offline-Unterstützung: App-Dateien werden zwischengespeichert.
 // Online wird immer die neueste Version geladen, offline die gespeicherte.
-const CACHE = 'mylib-v4';
+const CACHE = 'mylib-v5';
 const APP_FILES = [
   './',
   'index.html',
@@ -25,8 +25,11 @@ self.addEventListener('activate', (e) => {
 });
 
 // Cover-Bilder ändern sich nicht: einmal geladen, kommen sie aus dem Speicher (auch offline).
-const COVER_HOSTS = ['portal.dnb.de', 'covers.openlibrary.org', 'books.google.com', 'books.googleusercontent.com'];
-const COVER_CACHE = 'mylib-covers';
+const COVER_HOSTS = [
+  'portal.dnb.de', 'www.buchhandel.de', 'images-na.ssl-images-amazon.com',
+  'covers.openlibrary.org', 'books.google.com', 'books.googleusercontent.com',
+];
+const COVER_CACHE = 'mylib-covers-v2';
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
@@ -43,7 +46,8 @@ self.addEventListener('fetch', (e) => {
   }
   if (url.origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request)
+    // no-cache: immer beim Server nachfragen, damit Updates sofort ankommen.
+    fetch(e.request, { cache: 'no-cache' })
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copy));
