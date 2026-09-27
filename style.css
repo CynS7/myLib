@@ -18,11 +18,14 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  -webkit-tap-highlight-color: transparent;
 }
 header, main { max-width: 720px; margin: 0 auto; padding: 0 16px; }
 header h1 { margin: 24px 0 4px; }
@@ -30,6 +33,7 @@ header h1 { margin: 24px 0 4px; }
 
 input, select, button {
   font: inherit;
+  font-size: 16px; /* verhindert Auto-Zoom auf iOS */
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -54,6 +58,7 @@ button[type="submit"] { background: var(--accent); color: #fff; border-color: va
 #book-list { list-style: none; padding: 0; margin: 0; }
 #book-list li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   background: var(--card);
@@ -62,7 +67,7 @@ button[type="submit"] { background: var(--accent); color: #fff; border-color: va
   padding: 10px 12px;
   margin-bottom: 8px;
 }
-.info { flex: 1; min-width: 0; }
+.info { flex: 1 1 200px; min-width: 0; }
 .info strong { display: block; overflow-wrap: anywhere; }
 .info span { color: var(--muted); font-size: .9em; }
 .tag {

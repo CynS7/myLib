@@ -252,3 +252,10 @@ $('import-file').addEventListener('change', async (e) => {
 });
 
 render();
+
+// Als App installierbar und offline nutzbar machen.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+// Den Browser bitten, die gespeicherten Bücher nicht automatisch zu löschen.
+navigator.storage?.persist?.().catch(() => {});
