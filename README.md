@@ -1,6 +1,6 @@
 # myLib
 
-App zur Verwaltung der eigenen Bücher: Wunschliste, im Besitz, lese ich gerade, gelesen (mit Datum). Buchdaten lassen sich per ISBN abrufen.
+App zur Verwaltung der eigenen Bücher: Wunschliste, im Besitz, lese ich gerade, gelesen (mit Datum) und Lesesprache (Deutsch/Englisch). Buchdaten lassen sich per ISBN abrufen.
 
 ## Aufs iPhone installieren
 

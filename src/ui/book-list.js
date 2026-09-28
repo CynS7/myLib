@@ -1,6 +1,6 @@
 // Darstellung der Bücherliste als Karten. Aktionen werden über Callbacks nach außen gemeldet.
 
-import { coverCandidates, isWishlist } from '../core/index.js';
+import { LANGUAGES, coverCandidates, isWishlist, languageOf } from '../core/index.js';
 
 const formatDate = (iso) => new Date(iso + 'T00:00').toLocaleDateString('de-DE');
 
@@ -45,7 +45,10 @@ function renderCard(book, actions) {
       onclick: (e) => { e.stopPropagation(); onClick(); },
     });
 
+  // Deutsch ist der Standard und wird nicht extra angezeigt.
+  const language = languageOf(book);
   const meta = [
+    language !== 'de' && `🇬🇧 ${LANGUAGES[language]}`,
     book.pages && `${book.pages} Seiten`,
     book.reading && book.startedAt && `liest seit ${formatDate(book.startedAt)}`,
     book.read && book.readAt && `gelesen am ${formatDate(book.readAt)}`,

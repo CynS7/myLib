@@ -1,7 +1,7 @@
 // Bücherverwaltung: Datenmodell, Regeln und Speicherung. Kein Zugriff auf die Anzeige.
 //
 // Ein Buch sieht so aus:
-// { id, addedAt, isbn, title, author, pages, coverUrl, owned, reading, startedAt, read, readAt }
+// { id, addedAt, isbn, title, author, pages, coverUrl, language, owned, reading, startedAt, read, readAt }
 
 import { normalizeIsbn } from './isbn.js';
 
@@ -16,6 +16,12 @@ export const FILTERS = {
 };
 
 export const isWishlist = (b) => !b.owned && !b.read && !b.reading;
+
+// Sprache, in der das Buch gelesen wird/wurde. Standard ist Deutsch.
+export const LANGUAGES = { de: 'Deutsch', en: 'Englisch' };
+export const DEFAULT_LANGUAGE = 'de';
+// Ältere Einträge haben noch keine Sprache gespeichert.
+export const languageOf = (b) => (b.language in LANGUAGES ? b.language : DEFAULT_LANGUAGE);
 export const today = () => new Date().toISOString().slice(0, 10);
 
 function matchesSearch(book, query) {
@@ -34,6 +40,7 @@ function cleanFields(data) {
   if ('pages' in data) fields.pages = Number(data.pages) > 0 ? Number(data.pages) : null;
   if ('coverUrl' in data) fields.coverUrl = data.coverUrl || null;
   if ('owned' in data) fields.owned = Boolean(data.owned);
+  if ('language' in data) fields.language = data.language in LANGUAGES ? data.language : DEFAULT_LANGUAGE;
   return fields;
 }
 
@@ -89,6 +96,7 @@ export class BookStore {
       author: '',
       pages: null,
       coverUrl: null,
+      language: DEFAULT_LANGUAGE,
       ...fields,
       owned: false,
       reading: false,

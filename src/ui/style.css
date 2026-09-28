@@ -276,3 +276,11 @@ main { max-width: 720px; margin: 0 auto; padding: 0 16px; }
 }
 .switch:checked { background: var(--accent); }
 .switch:checked::after { transform: translateX(20px); }
+
+/* Umschalter mit mehreren Optionen (z. B. Sprache) */
+.segmented { display: flex; padding: 2px; border-radius: 9px; background: var(--field); }
+.segmented label { position: relative; }
+.segmented input { position: absolute; opacity: 0; pointer-events: none; }
+.segmented span { display: block; padding: 6px 14px; border-radius: 7px; font-size: 14px; color: var(--muted); }
+.segmented input:checked + span { background: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+.segmented input:focus-visible + span { outline: 2px solid var(--accent); }

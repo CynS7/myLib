@@ -1,10 +1,20 @@
 // Fenster zum Hinzufügen, Ansehen und Bearbeiten eines Buchs.
 
-import { today } from '../core/index.js';
+import { LANGUAGES, languageOf, today } from '../core/index.js';
 import { renderCover } from './book-list.js';
 
 export function createBookForm(app, $) {
   const sheet = $('book-sheet');
+
+  // Auswahl der Lesesprache aus den Sprachen der Logik erzeugen.
+  $('language-picker').replaceChildren(...Object.entries(LANGUAGES).map(([code, name]) => {
+    const label = document.createElement('label');
+    const input = Object.assign(document.createElement('input'), { type: 'radio', name: 'language', value: code });
+    label.append(input, Object.assign(document.createElement('span'), { textContent: name }));
+    return label;
+  }));
+  const selectedLanguage = () => $('book-form').elements.language.value;
+  const selectLanguage = (code) => { $('book-form').elements.language.value = code; };
   const status = $('lookup-status');
 
   function showStatus(text) {
@@ -30,6 +40,7 @@ export function createBookForm(app, $) {
     $('title').value = book?.title || '';
     $('author').value = book?.author || '';
     $('pages').value = book?.pages || '';
+    selectLanguage(languageOf(book || {}));
     $('owned').checked = Boolean(book?.owned);
     $('reading').checked = Boolean(book?.reading);
     $('read').checked = Boolean(book?.read);
@@ -86,6 +97,7 @@ export function createBookForm(app, $) {
       title: $('title').value,
       author: $('author').value,
       pages: $('pages').value,
+      language: selectedLanguage(),
       coverUrl: $('cover-url').value,
     };
     const id = $('book-id').value;

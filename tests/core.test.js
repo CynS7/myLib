@@ -124,3 +124,17 @@ test('Lese ich: schließt Gelesen aus, nicht mehr auf der Wunschliste, steht obe
   assert.equal(books.get(id).read, false);
   assert.equal(books.get(id).readAt, null);
 });
+
+test('Sprache: Standard Deutsch, auf Englisch umstellbar, alte Einträge gelten als Deutsch', async () => {
+  const { LANGUAGES, languageOf } = await import('../src/core/index.js');
+  const { books } = createApp(memoryBackend());
+  const { id } = books.add({ title: 'A' });
+  assert.equal(books.get(id).language, 'de');
+  books.update(id, { language: 'en' });
+  assert.equal(books.get(id).language, 'en');
+  books.update(id, { language: 'xx' });
+  assert.equal(books.get(id).language, 'de');
+  assert.equal(books.add({ title: 'B', language: 'en' }).language, 'en');
+  assert.equal(languageOf({}), 'de');
+  assert.equal(LANGUAGES.en, 'Englisch');
+});

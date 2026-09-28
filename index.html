@@ -45,7 +45,7 @@
         <label for="google-key" class="muted">API-Schlüssel (optional, nur auf diesem Gerät gespeichert)</label>
         <input id="google-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…">
       </div>
-      <p class="muted center version">myLib · Version 9</p>
+      <p class="muted center version">myLib · Version 10</p>
     </section>
   </main>
 
@@ -84,6 +84,10 @@
         <input id="title" placeholder="Titel" required aria-label="Titel">
         <input id="author" placeholder="Autor" aria-label="Autor">
         <input id="pages" type="number" min="1" inputmode="numeric" placeholder="Seiten" aria-label="Seiten">
+      </div>
+
+      <div class="field-group">
+        <div class="switch-row">Sprache <div class="segmented" id="language-picker" role="radiogroup" aria-label="Sprache"></div></div>
       </div>
 
       <div class="field-group" id="edit-fields" hidden>

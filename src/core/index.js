@@ -5,7 +5,7 @@ import { BookStore } from './books.js';
 import { Settings } from './settings.js';
 import { lookupIsbn } from './isbn.js';
 
-export { FILTERS, isWishlist, today } from './books.js';
+export { FILTERS, LANGUAGES, isWishlist, languageOf, today } from './books.js';
 export { coverCandidates } from './covers.js';
 export { normalizeIsbn } from './isbn.js';
 
