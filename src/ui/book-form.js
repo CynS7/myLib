@@ -31,6 +31,7 @@ export function createBookForm(app, $) {
     $('author').value = book?.author || '';
     $('pages').value = book?.pages || '';
     $('owned').checked = Boolean(book?.owned);
+    $('reading').checked = Boolean(book?.reading);
     $('read').checked = Boolean(book?.read);
     $('read-at').value = book?.readAt || '';
     status.hidden = true;
@@ -93,6 +94,7 @@ export function createBookForm(app, $) {
         app.books.update(id, {
           ...data,
           owned: $('owned').checked,
+          reading: $('reading').checked,
           read: $('read').checked,
           readAt: $('read-at').value || null,
         });
@@ -128,8 +130,16 @@ export function createBookForm(app, $) {
   $('isbn').addEventListener('input', () => { $('cover-url').value = ''; });
   $('isbn').addEventListener('change', updateCover);
   $('title').addEventListener('change', updateCover);
+  // "Lese ich gerade" und "Gelesen" schließen sich gegenseitig aus.
   $('read').addEventListener('change', () => {
+    if ($('read').checked) $('reading').checked = false;
     $('read-at').value = $('read').checked ? $('read-at').value || today() : '';
+    updateReadAt();
+  });
+  $('reading').addEventListener('change', () => {
+    if (!$('reading').checked) return;
+    $('read').checked = false;
+    $('read-at').value = '';
     updateReadAt();
   });
   // Tippen auf den abgedunkelten Hintergrund schließt das Fenster.

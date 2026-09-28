@@ -14,7 +14,7 @@ test('neue Bücher landen auf der Wunschliste', () => {
   assert.equal(book.pages, 600);
   assert.equal(book.owned, false);
   assert.equal(book.read, false);
-  assert.deepEqual(books.stats(), { total: 1, wishlist: 1, unreadOwned: 0, read: 0 });
+  assert.deepEqual(books.stats(), { total: 1, wishlist: 1, reading: 0, unreadOwned: 0, read: 0 });
 });
 
 test('Titel ist Pflicht', () => {
@@ -101,4 +101,26 @@ test('ISBN-Suche: Reihenfolge der Quellen, Seitenzahl ergänzen, Fehlerdetails',
   ]);
 
   await assert.rejects(() => lookupIsbn('123', {}, sources), /gültige ISBN/);
+});
+
+test('Lese ich: schließt Gelesen aus, nicht mehr auf der Wunschliste, steht oben', () => {
+  const { books } = createApp(memoryBackend());
+  books.add({ title: 'A' });
+  const { id } = books.add({ title: 'B' });
+  books.toggleReading(id);
+  assert.equal(books.get(id).reading, true);
+  assert.match(books.get(id).startedAt, /^\d{4}-\d{2}-\d{2}$/);
+  assert.deepEqual(books.list({ filter: 'wishlist' }).map((b) => b.title), ['A']);
+  assert.deepEqual(books.list({ filter: 'reading' }).map((b) => b.title), ['B']);
+  assert.deepEqual(books.list().map((b) => b.title), ['B', 'A']);
+  assert.equal(books.stats().reading, 1);
+
+  books.toggleRead(id);
+  assert.equal(books.get(id).reading, false);
+  assert.equal(books.get(id).startedAt, null);
+  assert.equal(books.get(id).read, true);
+
+  books.toggleReading(id);
+  assert.equal(books.get(id).read, false);
+  assert.equal(books.get(id).readAt, null);
 });

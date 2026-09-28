@@ -1,6 +1,6 @@
 # myLib
 
-App zur Verwaltung der eigenen Bücher: Wunschliste, im Besitz, gelesen (mit Datum). Buchdaten lassen sich per ISBN abrufen.
+App zur Verwaltung der eigenen Bücher: Wunschliste, im Besitz, lese ich gerade, gelesen (mit Datum). Buchdaten lassen sich per ISBN abrufen.
 
 ## Aufs iPhone installieren
 
@@ -40,7 +40,7 @@ Die Ansicht nutzt nur `createApp()` aus `src/core/index.js`:
 
 - `app.books.list({ filter, query })`, `app.books.stats()`, `app.books.get(id)`
 - `app.books.add(data)`, `app.books.update(id, data)`, `app.books.remove(id)`
-- `app.books.toggleOwned(id)`, `app.books.toggleRead(id)`
+- `app.books.toggleOwned(id)`, `app.books.toggleReading(id)`, `app.books.toggleRead(id)`
 - `app.books.exportJson()`, `app.books.importJson(text)`
 - `app.books.subscribe(callback)`: wird nach jeder Änderung aufgerufen
 - `app.lookupIsbn(isbn)`, `app.settings.googleApiKey`

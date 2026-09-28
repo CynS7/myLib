@@ -1,7 +1,7 @@
 // Bücherverwaltung: Datenmodell, Regeln und Speicherung. Kein Zugriff auf die Anzeige.
 //
 // Ein Buch sieht so aus:
-// { id, addedAt, isbn, title, author, pages, coverUrl, owned, read, readAt }
+// { id, addedAt, isbn, title, author, pages, coverUrl, owned, reading, startedAt, read, readAt }
 
 import { normalizeIsbn } from './isbn.js';
 
@@ -10,11 +10,12 @@ const STORAGE_KEY = 'mylib.books';
 export const FILTERS = {
   all: () => true,
   wishlist: (b) => isWishlist(b),
+  reading: (b) => Boolean(b.reading),
   'unread-owned': (b) => b.owned && !b.read,
   read: (b) => b.read,
 };
 
-export const isWishlist = (b) => !b.owned && !b.read;
+export const isWishlist = (b) => !b.owned && !b.read && !b.reading;
 export const today = () => new Date().toISOString().slice(0, 10);
 
 function matchesSearch(book, query) {
@@ -63,13 +64,15 @@ export class BookStore {
     const byFilter = FILTERS[filter] || FILTERS.all;
     return this.books
       .filter((b) => byFilter(b) && matchesSearch(b, query))
-      .sort((a, b) => a.title.localeCompare(b.title, 'de'));
+      // Bücher, die gerade gelesen werden, stehen oben.
+      .sort((a, b) => Number(Boolean(b.reading)) - Number(Boolean(a.reading)) || a.title.localeCompare(b.title, 'de'));
   }
 
   stats() {
     return {
       total: this.books.length,
       wishlist: this.books.filter(isWishlist).length,
+      reading: this.books.filter(FILTERS.reading).length,
       unreadOwned: this.books.filter(FILTERS['unread-owned']).length,
       read: this.books.filter(FILTERS.read).length,
     };
@@ -88,6 +91,8 @@ export class BookStore {
       coverUrl: null,
       ...fields,
       owned: false,
+      reading: false,
+      startedAt: null,
       read: false,
       readAt: null,
     };
@@ -96,13 +101,15 @@ export class BookStore {
     return book;
   }
 
-  // data kann zusätzlich { read, readAt } enthalten.
+  // data kann zusätzlich { reading, read, readAt } enthalten.
+  // "Lese ich" und "Gelesen" schließen sich aus; sind beide gesetzt, gewinnt "Gelesen".
   update(id, data) {
     const book = this.get(id);
     if (!book) throw new Error('Buch nicht gefunden.');
     const fields = cleanFields(data);
     if ('title' in fields && !fields.title) throw new Error('Titel fehlt.');
     Object.assign(book, fields);
+    if ('reading' in data) this.#applyReading(book, data.reading);
     if ('read' in data) this.#applyRead(book, data.read, data.readAt);
     this.#commit();
     return book;
@@ -118,14 +125,33 @@ export class BookStore {
     return this.update(id, { owned: !book.owned });
   }
 
+  toggleReading(id) {
+    const book = this.get(id);
+    return this.update(id, { reading: !book.reading });
+  }
+
   toggleRead(id) {
     const book = this.get(id);
     return this.update(id, { read: !book.read });
   }
 
+  #applyReading(book, reading) {
+    const wasReading = Boolean(book.reading);
+    book.reading = Boolean(reading);
+    book.startedAt = book.reading ? (wasReading && book.startedAt) || today() : null;
+    if (book.reading) {
+      book.read = false;
+      book.readAt = null;
+    }
+  }
+
   #applyRead(book, read, readAt) {
     book.read = Boolean(read);
     book.readAt = book.read ? readAt || book.readAt || today() : null;
+    if (book.read) {
+      book.reading = false;
+      book.startedAt = null;
+    }
   }
 
   exportJson() {

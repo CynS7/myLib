@@ -28,6 +28,7 @@ const run = (fn) => {
 
 const listActions = {
   onToggleOwned: (book) => run(() => app.books.toggleOwned(book.id)),
+  onToggleReading: (book) => run(() => app.books.toggleReading(book.id)),
   onToggleRead: (book) => run(() => app.books.toggleRead(book.id)),
   onOpen: (book) => form.open(book),
 };

@@ -37,15 +37,19 @@ export function renderCover(book, { large = false } = {}) {
 }
 
 function renderCard(book, actions) {
-  const chip = (label, on, onClick) =>
+  const chip = (label, on, onClick, variant = '') =>
     el('button', {
       type: 'button',
-      className: 'chip' + (on ? ' on' : ''),
+      className: ['chip', variant, on && 'on'].filter(Boolean).join(' '),
       textContent: label,
       onclick: (e) => { e.stopPropagation(); onClick(); },
     });
 
-  const meta = [book.pages && `${book.pages} Seiten`, book.read && book.readAt && `gelesen am ${formatDate(book.readAt)}`]
+  const meta = [
+    book.pages && `${book.pages} Seiten`,
+    book.reading && book.startedAt && `liest seit ${formatDate(book.startedAt)}`,
+    book.read && book.readAt && `gelesen am ${formatDate(book.readAt)}`,
+  ]
     .filter(Boolean).join(' · ');
 
   const body = el('div', { className: 'card-body' }, [
@@ -55,11 +59,13 @@ function renderCard(book, actions) {
     el('div', { className: 'chips' }, [
       ...(isWishlist(book) ? [el('span', { className: 'chip wish', textContent: '⭐ Wunschliste' })] : []),
       chip(book.owned ? '✓ Besitz' : 'Besitz', book.owned, () => actions.onToggleOwned(book)),
+      chip(book.reading ? '📖 Lese ich' : 'Lese ich', book.reading, () => actions.onToggleReading(book), 'reading'),
       chip(book.read ? '✓ Gelesen' : 'Gelesen', book.read, () => actions.onToggleRead(book)),
     ]),
   ]);
 
-  return el('li', { className: 'card', onclick: () => actions.onOpen(book) }, [renderCover(book), body]);
+  const className = 'card' + (book.reading ? ' is-reading' : '');
+  return el('li', { className, onclick: () => actions.onOpen(book) }, [renderCover(book), body]);
 }
 
 export function renderBookList(listEl, books, actions) {
@@ -67,5 +73,11 @@ export function renderBookList(listEl, books, actions) {
 }
 
 export function renderStats(statsEl, s) {
-  statsEl.textContent = `${s.total} Bücher · ${s.wishlist} Wunsch · ${s.unreadOwned} im Regal · ${s.read} gelesen`;
+  statsEl.textContent = [
+    `${s.total} Bücher`,
+    s.reading && `${s.reading} am Lesen`,
+    `${s.wishlist} Wunsch`,
+    `${s.unreadOwned} im Regal`,
+    `${s.read} gelesen`,
+  ].filter(Boolean).join(' · ');
 }

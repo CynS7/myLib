@@ -113,6 +113,8 @@ main { max-width: 720px; margin: 0 auto; padding: 0 16px; }
   white-space: nowrap;
 }
 .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip.reading.on { background: #c2410c; border-color: #c2410c; }
+.card.is-reading { box-shadow: inset 4px 0 0 #c2410c, var(--shadow); }
 .chip.wish { border-style: dashed; color: var(--muted); cursor: default; }
 
 /* Cover */
