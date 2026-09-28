@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#2f6f4f">
+  <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="myLib">
@@ -15,61 +16,86 @@
   <link rel="stylesheet" href="src/ui/style.css">
 </head>
 <body>
-  <header>
-    <h1>📚 myLib</h1>
-    <p id="stats"></p>
+  <header class="top">
+    <h1 id="view-title">Alle Bücher</h1>
+    <p id="stats" class="muted"></p>
+    <input id="search" type="search" placeholder="Titel, Autor oder ISBN" aria-label="Suchen">
   </header>
 
   <main>
-    <form id="book-form" autocomplete="off">
+    <section id="list-view">
+      <ul id="book-list" class="cards"></ul>
+      <div id="empty" class="empty" hidden>
+        <p class="empty-icon">📚</p>
+        <p id="empty-text">Keine Bücher gefunden.</p>
+      </div>
+    </section>
+
+    <section id="more-view" hidden>
+      <div class="panel">
+        <h2>Daten sichern</h2>
+        <p class="muted">Deine Bücher sind nur auf diesem Gerät gespeichert. Exportiere sie ab und zu als Sicherung.</p>
+        <div class="button-row">
+          <button type="button" id="export-btn" class="btn">Exportieren</button>
+          <label class="btn">Importieren<input type="file" id="import-file" accept="application/json" hidden></label>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Google Books</h2>
+        <label for="google-key" class="muted">API-Schlüssel (optional, nur auf diesem Gerät gespeichert)</label>
+        <input id="google-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…">
+      </div>
+      <p class="muted center version">myLib · Version 8</p>
+    </section>
+  </main>
+
+  <button type="button" id="add-btn" class="fab" aria-label="Buch hinzufügen">+</button>
+
+  <nav class="tabbar" id="tabbar">
+    <button type="button" data-tab="all" class="active"><span class="tab-icon">📚</span><span>Alle</span></button>
+    <button type="button" data-tab="wishlist"><span class="tab-icon">⭐</span><span>Wunsch</span></button>
+    <button type="button" data-tab="unread-owned"><span class="tab-icon">📖</span><span>Regal</span></button>
+    <button type="button" data-tab="read"><span class="tab-icon">✅</span><span>Gelesen</span></button>
+    <button type="button" data-tab="more"><span class="tab-icon">⚙️</span><span>Mehr</span></button>
+  </nav>
+
+  <dialog id="book-sheet" class="sheet">
+    <form id="book-form" method="dialog" autocomplete="off">
+      <div class="sheet-head">
+        <button type="button" id="cancel-btn" class="link">Abbrechen</button>
+        <h2 id="sheet-title">Neues Buch</h2>
+        <button type="submit" id="submit-btn" class="link strong">Hinzufügen</button>
+      </div>
+
       <input type="hidden" id="book-id">
       <input type="hidden" id="cover-url">
-      <div class="row">
-        <input id="isbn" placeholder="ISBN" inputmode="numeric">
-        <button type="button" id="lookup-btn">ISBN suchen</button>
+
+      <div class="sheet-cover" id="sheet-cover"></div>
+
+      <div class="field-group">
+        <div class="isbn-row">
+          <input id="isbn" placeholder="ISBN" inputmode="numeric" aria-label="ISBN">
+          <button type="button" id="lookup-btn" class="btn">Suchen</button>
+        </div>
+        <p id="lookup-status" class="hint" hidden></p>
       </div>
-      <p id="lookup-status" class="hint" hidden></p>
-      <div class="row">
-        <input id="title" placeholder="Titel" required>
-        <input id="author" placeholder="Autor">
-        <input id="pages" type="number" min="1" inputmode="numeric" placeholder="Seiten">
+
+      <div class="field-group">
+        <input id="title" placeholder="Titel" required aria-label="Titel">
+        <input id="author" placeholder="Autor" aria-label="Autor">
+        <input id="pages" type="number" min="1" inputmode="numeric" placeholder="Seiten" aria-label="Seiten">
       </div>
-      <div class="row" id="edit-fields" hidden>
-        <label><input type="checkbox" id="owned"> Besitze ich</label>
-        <label><input type="checkbox" id="read"> Gelesen am</label>
-        <input type="date" id="read-at">
+
+      <div class="field-group" id="edit-fields" hidden>
+        <label class="switch-row">Besitze ich <input type="checkbox" id="owned" class="switch"></label>
+        <label class="switch-row">Gelesen <input type="checkbox" id="read" class="switch"></label>
+        <label class="switch-row" id="read-at-row">Gelesen am <input type="date" id="read-at"></label>
       </div>
-      <div class="row">
-        <button type="submit" id="submit-btn">Auf Wunschliste setzen</button>
-        <button type="button" id="cancel-btn" hidden>Abbrechen</button>
-      </div>
+
+      <p class="hint center" id="new-hint">Neue Bücher kommen auf die Wunschliste.</p>
+      <button type="button" id="delete-btn" class="btn danger wide" hidden>Buch löschen</button>
     </form>
-
-    <div class="toolbar">
-      <input id="search" type="search" placeholder="Suchen nach Titel, Autor oder ISBN …">
-      <select id="filter">
-        <option value="all">Alle</option>
-        <option value="wishlist">Wunschliste</option>
-        <option value="unread-owned">Besitze, ungelesen</option>
-        <option value="read">Gelesen</option>
-      </select>
-    </div>
-
-    <ul id="book-list"></ul>
-    <p id="empty" hidden>Keine Bücher gefunden.</p>
-
-    <footer>
-      <button type="button" id="export-btn">Exportieren</button>
-      <label class="import">Importieren<input type="file" id="import-file" accept="application/json" hidden></label>
-      <span class="version">Version 7</span>
-    </footer>
-
-    <details class="settings">
-      <summary>Einstellungen</summary>
-      <label for="google-key">Google-Books-API-Schlüssel (optional)</label>
-      <input id="google-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…">
-    </details>
-  </main>
+  </dialog>
 
   <script type="module" src="src/ui/main.js"></script>
 </body>

@@ -1,17 +1,20 @@
-// Darstellung der Bücherliste. Aktionen werden über Callbacks nach außen gemeldet.
+// Darstellung der Bücherliste als Karten. Aktionen werden über Callbacks nach außen gemeldet.
 
 import { coverCandidates, isWishlist } from '../core/index.js';
 
 const formatDate = (iso) => new Date(iso + 'T00:00').toLocaleDateString('de-DE');
 
-function el(tag, props = {}, children = []) {
+export function el(tag, props = {}, children = []) {
   const node = Object.assign(document.createElement(tag), props);
   node.append(...children);
   return node;
 }
 
-function renderCover(book) {
-  const box = el('div', { className: 'cover' });
+// Cover mit Anfangsbuchstaben als Platzhalter, bis ein Bild geladen ist.
+export function renderCover(book, { large = false } = {}) {
+  const box = el('div', { className: 'cover' + (large ? ' large' : '') }, [
+    el('span', { className: 'cover-initial', textContent: (book.title || '?').trim().charAt(0).toUpperCase() }),
+  ]);
   const candidates = coverCandidates(book);
   if (!candidates.length) return box;
 
@@ -33,37 +36,36 @@ function renderCover(book) {
   return box;
 }
 
-function renderBook(book, actions) {
-  const meta = [book.author || '—', book.pages && `${book.pages} Seiten`, book.isbn && `ISBN ${book.isbn}`]
+function renderCard(book, actions) {
+  const chip = (label, on, onClick) =>
+    el('button', {
+      type: 'button',
+      className: 'chip' + (on ? ' on' : ''),
+      textContent: label,
+      onclick: (e) => { e.stopPropagation(); onClick(); },
+    });
+
+  const meta = [book.pages && `${book.pages} Seiten`, book.read && book.readAt && `gelesen am ${formatDate(book.readAt)}`]
     .filter(Boolean).join(' · ');
-  const info = el('div', { className: 'info' }, [
-    el('strong', { textContent: book.title }),
-    el('span', { textContent: meta }),
+
+  const body = el('div', { className: 'card-body' }, [
+    el('p', { className: 'card-title', textContent: book.title }),
+    el('p', { className: 'card-author', textContent: book.author || 'Unbekannter Autor' }),
+    ...(meta ? [el('p', { className: 'card-meta', textContent: meta })] : []),
+    el('div', { className: 'chips' }, [
+      ...(isWishlist(book) ? [el('span', { className: 'chip wish', textContent: '⭐ Wunschliste' })] : []),
+      chip(book.owned ? '✓ Besitz' : 'Besitz', book.owned, () => actions.onToggleOwned(book)),
+      chip(book.read ? '✓ Gelesen' : 'Gelesen', book.read, () => actions.onToggleRead(book)),
+    ]),
   ]);
 
-  const tag = (label, on, onclick) =>
-    el('button', { className: 'tag' + (on ? ' on' : ''), textContent: label, title: 'Umschalten', onclick });
-
-  const badges = el('div', { className: 'badges' }, [
-    ...(isWishlist(book) ? [el('span', { className: 'tag wish', textContent: 'Wunschliste' })] : []),
-    tag('Besitz', book.owned, () => actions.onToggleOwned(book)),
-    tag(book.read ? `Gelesen ${formatDate(book.readAt)}` : 'Gelesen', book.read, () => actions.onToggleRead(book)),
-  ]);
-
-  const buttons = el('div', { className: 'actions' }, [
-    el('button', { textContent: '✏️', title: 'Bearbeiten', onclick: () => actions.onEdit(book) }),
-    el('button', { textContent: '🗑️', title: 'Löschen', onclick: () => actions.onDelete(book) }),
-  ]);
-
-  return el('li', {}, [renderCover(book), info, badges, buttons]);
+  return el('li', { className: 'card', onclick: () => actions.onOpen(book) }, [renderCover(book), body]);
 }
 
-export function renderBookList(listEl, emptyEl, books, actions) {
-  listEl.replaceChildren(...books.map((b) => renderBook(b, actions)));
-  emptyEl.hidden = books.length > 0;
+export function renderBookList(listEl, books, actions) {
+  listEl.replaceChildren(...books.map((b) => renderCard(b, actions)));
 }
 
 export function renderStats(statsEl, s) {
-  statsEl.textContent =
-    `${s.total} Bücher · ${s.wishlist} auf der Wunschliste · ${s.unreadOwned} im Regal ungelesen · ${s.read} gelesen`;
+  statsEl.textContent = `${s.total} Bücher · ${s.wishlist} Wunsch · ${s.unreadOwned} im Regal · ${s.read} gelesen`;
 }

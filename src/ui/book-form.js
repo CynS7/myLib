@@ -1,8 +1,10 @@
-// Formular zum Hinzufügen und Bearbeiten eines Buchs.
+// Fenster zum Hinzufügen, Ansehen und Bearbeiten eines Buchs.
 
 import { today } from '../core/index.js';
+import { renderCover } from './book-list.js';
 
 export function createBookForm(app, $) {
+  const sheet = $('book-sheet');
   const status = $('lookup-status');
 
   function showStatus(text) {
@@ -10,31 +12,47 @@ export function createBookForm(app, $) {
     status.textContent = text;
   }
 
-  function reset() {
-    $('book-form').reset();
-    $('book-id').value = '';
-    $('cover-url').value = '';
-    $('edit-fields').hidden = true;
-    status.hidden = true;
-    $('submit-btn').textContent = 'Auf Wunschliste setzen';
-    $('cancel-btn').hidden = true;
+  // Vorschau aus den aktuellen Formularwerten.
+  function updateCover() {
+    const preview = { title: $('title').value, isbn: $('isbn').value.replace(/[^0-9Xx]/g, ''), coverUrl: $('cover-url').value };
+    $('sheet-cover').replaceChildren(renderCover(preview, { large: true }));
   }
 
-  function edit(book) {
-    $('book-id').value = book.id;
-    $('isbn').value = book.isbn || '';
-    $('cover-url').value = book.coverUrl || '';
-    $('title').value = book.title;
-    $('author').value = book.author;
-    $('pages').value = book.pages || '';
-    $('owned').checked = book.owned;
-    $('read').checked = book.read;
-    $('read-at').value = book.readAt || '';
-    $('edit-fields').hidden = false;
-    $('submit-btn').textContent = 'Speichern';
-    $('cancel-btn').hidden = false;
-    $('title').focus();
+  function updateReadAt() {
+    $('read-at-row').hidden = !$('read').checked;
   }
+
+  function fill(book) {
+    $('book-form').reset();
+    $('book-id').value = book?.id || '';
+    $('isbn').value = book?.isbn || '';
+    $('cover-url').value = book?.coverUrl || '';
+    $('title').value = book?.title || '';
+    $('author').value = book?.author || '';
+    $('pages').value = book?.pages || '';
+    $('owned').checked = Boolean(book?.owned);
+    $('read').checked = Boolean(book?.read);
+    $('read-at').value = book?.readAt || '';
+    status.hidden = true;
+
+    const editing = Boolean(book);
+    $('sheet-title').textContent = editing ? 'Buch' : 'Neues Buch';
+    $('submit-btn').textContent = editing ? 'Sichern' : 'Hinzufügen';
+    $('edit-fields').hidden = !editing;
+    $('delete-btn').hidden = !editing;
+    $('new-hint').hidden = editing;
+    updateReadAt();
+    updateCover();
+  }
+
+  function open(book = null) {
+    fill(book);
+    sheet.showModal();
+    sheet.scrollTop = 0;
+    if (!book) $('isbn').focus();
+  }
+
+  const close = () => sheet.close();
 
   async function lookup() {
     showStatus('Suche …');
@@ -52,6 +70,7 @@ export function createBookForm(app, $) {
       $('pages').value = book.pages || '';
       $('cover-url').value = book.cover || '';
       showStatus(`Gefunden über ${result.source} ✓`);
+      updateCover();
     } catch (err) {
       showStatus(err.message);
     } finally {
@@ -80,26 +99,41 @@ export function createBookForm(app, $) {
       } else {
         app.books.add(data);
       }
-      reset();
+      close();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function remove() {
+    const id = $('book-id').value;
+    const book = app.books.get(id);
+    if (!book || !confirm(`„${book.title}“ löschen?`)) return;
+    try {
+      app.books.remove(id);
+      close();
     } catch (err) {
       alert(err.message);
     }
   }
 
   $('book-form').addEventListener('submit', submit);
-  $('cancel-btn').addEventListener('click', reset);
+  $('cancel-btn').addEventListener('click', close);
+  $('delete-btn').addEventListener('click', remove);
   $('lookup-btn').addEventListener('click', lookup);
   $('isbn').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); lookup(); }
   });
   // Ein gespeichertes Cover gehört zur alten ISBN.
   $('isbn').addEventListener('input', () => { $('cover-url').value = ''; });
+  $('isbn').addEventListener('change', updateCover);
+  $('title').addEventListener('change', updateCover);
   $('read').addEventListener('change', () => {
     $('read-at').value = $('read').checked ? $('read-at').value || today() : '';
+    updateReadAt();
   });
-  $('read-at').addEventListener('change', () => {
-    $('read').checked = Boolean($('read-at').value);
-  });
+  // Tippen auf den abgedunkelten Hintergrund schließt das Fenster.
+  sheet.addEventListener('click', (e) => { if (e.target === sheet) close(); });
 
-  return { edit, reset };
+  return { open };
 }
