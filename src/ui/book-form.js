@@ -2,9 +2,11 @@
 
 import { LANGUAGES, languageOf, today } from '../core/index.js';
 import { renderCover } from './book-list.js';
+import { createScanner } from './scanner.js';
 
 export function createBookForm(app, $) {
   const sheet = $('book-sheet');
+  const scanner = createScanner($);
 
   // Auswahl der Lesesprache aus den Sprachen der Logik erzeugen.
   $('language-picker').replaceChildren(...Object.entries(LANGUAGES).map(([code, name]) => {
@@ -65,6 +67,25 @@ export function createBookForm(app, $) {
   }
 
   const close = () => sheet.close();
+
+  // Barcode scannen, ISBN eintragen und direkt nachschlagen.
+  async function scan() {
+    try {
+      const isbn = await scanner.scan();
+      if (!isbn) return;
+      $('isbn').value = isbn;
+      $('cover-url').value = '';
+      await lookup();
+    } catch (err) {
+      showStatus(err.message);
+    }
+  }
+
+  // Neues Buch anlegen und gleich den Scanner öffnen.
+  function openWithScan() {
+    open();
+    scan();
+  }
 
   async function lookup() {
     showStatus('Suche …');
@@ -135,6 +156,8 @@ export function createBookForm(app, $) {
   $('cancel-btn').addEventListener('click', close);
   $('delete-btn').addEventListener('click', remove);
   $('lookup-btn').addEventListener('click', lookup);
+  $('scan-btn').addEventListener('click', scan);
+  $('scan-btn').hidden = !scanner.supported;
   $('isbn').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); lookup(); }
   });
@@ -157,5 +180,5 @@ export function createBookForm(app, $) {
   // Tippen auf den abgedunkelten Hintergrund schließt das Fenster.
   sheet.addEventListener('click', (e) => { if (e.target === sheet) close(); });
 
-  return { open };
+  return { open, openWithScan, canScan: scanner.supported };
 }

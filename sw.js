@@ -1,6 +1,6 @@
 // Offline-Unterstützung: App-Dateien werden zwischengespeichert.
 // Online wird immer die neueste Version geladen, offline die gespeicherte.
-const CACHE = 'mylib-v10';
+const CACHE = 'mylib-v11';
 const APP_FILES = [
   './',
   'index.html',
@@ -8,6 +8,8 @@ const APP_FILES = [
   'src/ui/main.js',
   'src/ui/book-list.js',
   'src/ui/book-form.js',
+  'src/ui/scanner.js',
+  'src/vendor/zxing/zxing.min.js',
   'src/core/index.js',
   'src/core/books.js',
   'src/core/isbn.js',

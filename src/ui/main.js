@@ -9,7 +9,7 @@ const app = createApp();
 const form = createBookForm(app, $);
 
 const TABS = {
-  all: { title: 'Alle Bücher', empty: 'Noch keine Bücher. Tippe auf +, um eins hinzuzufügen.' },
+  all: { title: 'Alle Bücher', empty: 'Noch keine Bücher. Tippe auf 📷, um einen Barcode zu scannen, oder auf +.' },
   wishlist: { title: 'Wunschliste', empty: 'Deine Wunschliste ist leer.' },
   'unread-owned': { title: 'Im Regal', empty: 'Keine ungelesenen Bücher im Regal.' },
   read: { title: 'Gelesen', empty: 'Noch keine gelesenen Bücher.' },
@@ -40,6 +40,7 @@ function render() {
   $('more-view').hidden = isList;
   $('search').hidden = !isList;
   $('add-btn').hidden = !isList;
+  $('scan-add-btn').hidden = !isList || !form.canScan;
   renderStats($('stats'), app.books.stats());
   document.querySelectorAll('#tabbar button').forEach((b) => b.classList.toggle('active', b.dataset.tab === currentTab));
   if (!isList) return;
@@ -54,6 +55,7 @@ function render() {
 app.books.subscribe(render);
 $('search').addEventListener('input', render);
 $('add-btn').addEventListener('click', () => form.open());
+$('scan-add-btn').addEventListener('click', () => form.openWithScan());
 $('tabbar').addEventListener('click', (e) => {
   const tab = e.target.closest('button')?.dataset.tab;
   if (!tab) return;

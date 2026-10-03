@@ -67,6 +67,7 @@ button { cursor: pointer; }
   font-weight: 600;
   text-align: center;
 }
+.btn.icon { padding: 10px 12px; }
 .btn.danger { background: transparent; color: var(--danger); }
 .btn.wide { width: 100%; }
 .link { border: none; background: none; color: var(--accent); padding: 8px 4px; }
@@ -284,3 +285,70 @@ main { max-width: 720px; margin: 0 auto; padding: 0 16px; }
 .segmented span { display: block; padding: 6px 14px; border-radius: 7px; font-size: 14px; color: var(--muted); }
 .segmented input:checked + span { background: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
 .segmented input:focus-visible + span { outline: 2px solid var(--accent); }
+
+/* Zweiter, kleiner Knopf über dem +: direkt scannen */
+.fab.fab-small {
+  right: 28px;
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 84px);
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  background: var(--card);
+  color: var(--text);
+}
+
+/* Scanner (Vollbild) */
+.scanner {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: #000;
+  color: #fff;
+}
+.scanner::backdrop { background: #000; }
+.scanner video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.scanner-frame {
+  position: absolute;
+  left: 7.5%;
+  right: 7.5%;
+  top: 27.5%;
+  bottom: 27.5%;
+  border: 3px solid rgba(255, 255, 255, .9);
+  border-radius: 16px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .45);
+}
+.scanner-line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 50%;
+  height: 2px;
+  background: #ff3b30;
+  box-shadow: 0 0 8px #ff3b30;
+}
+.scanner-hint {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: calc(env(safe-area-inset-top) + 24px);
+  margin: 0;
+  text-align: center;
+  font-size: 16px;
+  text-shadow: 0 1px 3px #000;
+}
+.scanner-cancel {
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 32px);
+  transform: translateX(-50%);
+  padding: 12px 28px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .9);
+  color: #000;
+  font-weight: 600;
+}

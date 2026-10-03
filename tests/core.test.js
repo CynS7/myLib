@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createApp } from '../src/core/index.js';
 import { memoryBackend } from '../src/core/storage.js';
-import { isbn13to10, lookupIsbn, normalizeIsbn, parsePages } from '../src/core/isbn.js';
+import { isbn13to10, isbnFromBarcode, lookupIsbn, normalizeIsbn, parsePages } from '../src/core/isbn.js';
 import { coverCandidates } from '../src/core/covers.js';
 
 test('neue Bücher landen auf der Wunschliste', () => {
@@ -137,4 +137,13 @@ test('Sprache: Standard Deutsch, auf Englisch umstellbar, alte Einträge gelten 
   assert.equal(books.add({ title: 'B', language: 'en' }).language, 'en');
   assert.equal(languageOf({}), 'de');
   assert.equal(LANGUAGES.en, 'Englisch');
+});
+
+test('Barcode → ISBN: nur gültige Buch-Barcodes', () => {
+  assert.equal(isbnFromBarcode('9783690660426'), '9783690660426');
+  assert.equal(isbnFromBarcode('9780261102217'), '9780261102217');
+  assert.equal(isbnFromBarcode('9783690660427'), null); // falsche Prüfziffer
+  assert.equal(isbnFromBarcode('4006381333931'), null); // kein Buch (EAN eines Produkts)
+  assert.equal(isbnFromBarcode('52499'), null); // Preis-Zusatzcode
+  assert.equal(isbnFromBarcode(''), null);
 });

@@ -45,10 +45,11 @@
         <label for="google-key" class="muted">API-Schlüssel (optional, nur auf diesem Gerät gespeichert)</label>
         <input id="google-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…">
       </div>
-      <p class="muted center version">myLib · Version 10</p>
+      <p class="muted center version">myLib · Version 11</p>
     </section>
   </main>
 
+  <button type="button" id="scan-add-btn" class="fab fab-small" aria-label="Buch per Barcode hinzufügen" title="Barcode scannen">📷</button>
   <button type="button" id="add-btn" class="fab" aria-label="Buch hinzufügen">+</button>
 
   <nav class="tabbar" id="tabbar">
@@ -75,6 +76,7 @@
       <div class="field-group">
         <div class="isbn-row">
           <input id="isbn" placeholder="ISBN" inputmode="numeric" aria-label="ISBN">
+          <button type="button" id="scan-btn" class="btn icon" aria-label="Barcode scannen" title="Barcode scannen">📷</button>
           <button type="button" id="lookup-btn" class="btn">Suchen</button>
         </div>
         <p id="lookup-status" class="hint" hidden></p>
@@ -100,6 +102,13 @@
       <p class="hint center" id="new-hint">Neue Bücher kommen auf die Wunschliste.</p>
       <button type="button" id="delete-btn" class="btn danger wide" hidden>Buch löschen</button>
     </form>
+  </dialog>
+
+  <dialog id="scanner" class="scanner">
+    <video id="scanner-video" playsinline muted autoplay></video>
+    <div class="scanner-frame" aria-hidden="true"><span class="scanner-line"></span></div>
+    <p id="scanner-hint" class="scanner-hint"></p>
+    <button type="button" id="scanner-cancel" class="scanner-cancel">Abbrechen</button>
   </dialog>
 
   <script type="module" src="src/ui/main.js"></script>

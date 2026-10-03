@@ -7,7 +7,7 @@ import { lookupIsbn } from './isbn.js';
 
 export { FILTERS, LANGUAGES, isWishlist, languageOf, today } from './books.js';
 export { coverCandidates } from './covers.js';
-export { normalizeIsbn } from './isbn.js';
+export { isbnFromBarcode, normalizeIsbn } from './isbn.js';
 
 export function createApp(backend) {
   const storage = createStorage(backend);

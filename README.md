@@ -1,6 +1,6 @@
 # myLib
 
-App zur Verwaltung der eigenen Bücher: Wunschliste, im Besitz, lese ich gerade, gelesen (mit Datum) und Lesesprache (Deutsch/Englisch). Buchdaten lassen sich per ISBN abrufen.
+App zur Verwaltung der eigenen Bücher: Wunschliste, im Besitz, lese ich gerade, gelesen (mit Datum) und Lesesprache (Deutsch/Englisch). Buchdaten lassen sich per ISBN abrufen, die ISBN auch per Kamera vom Barcode scannen.
 
 ## Aufs iPhone installieren
 
@@ -31,7 +31,9 @@ src/ui/               Ansicht
   main.js             Verbindet HTML-Elemente mit der Logik
   book-list.js        Darstellung der Liste
   book-form.js        Formular zum Hinzufügen/Bearbeiten
+  scanner.js          Barcode-Scanner über die Kamera
   style.css           Aussehen
+src/vendor/zxing/     Barcode-Bibliothek ZXing (Apache-2.0), wird erst beim Scannen geladen
 tests/                Tests der Logik (npm test)
 sw.js                 Offline-Unterstützung
 ```

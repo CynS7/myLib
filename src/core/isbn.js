@@ -3,6 +3,20 @@
 export const normalizeIsbn = (s) => String(s || '').replace(/[^0-9Xx]/g, '').toUpperCase();
 export const isValidIsbn = (isbn) => isbn.length === 10 || isbn.length === 13;
 
+// Prüfziffer einer EAN-13 (ISBN-13) kontrollieren.
+function hasValidEanChecksum(code) {
+  const sum = [...code.slice(0, 12)].reduce((acc, d, i) => acc + Number(d) * (i % 2 ? 3 : 1), 0);
+  return (10 - (sum % 10)) % 10 === Number(code[12]);
+}
+
+// Gescannter Barcode → ISBN-13, oder null, wenn es kein Buch-Barcode ist
+// (z. B. Preis-Zusatzcode oder ein anderer Strichcode).
+export function isbnFromBarcode(text) {
+  const code = String(text || '').replace(/\D/g, '');
+  if (code.length !== 13 || !/^97[89]/.test(code)) return null;
+  return hasValidEanChecksum(code) ? code : null;
+}
+
 export function isbn13to10(isbn) {
   if (isbn.length === 10) return isbn;
   if (!isbn.startsWith('978')) return null;
