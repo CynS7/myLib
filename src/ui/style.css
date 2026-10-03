@@ -193,16 +193,29 @@ main { max-width: 720px; margin: 0 auto; padding: 0 16px; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   border: none;
   background: none;
   color: var(--muted);
   font-size: 11px;
-  filter: grayscale(1);
-  opacity: .7;
+  font-weight: 500;
+  transition: color .15s;
 }
-.tabbar button.active { color: var(--accent); filter: none; opacity: 1; font-weight: 600; }
-.tab-icon { font-size: 20px; }
+.tabbar button:active .tab-icon { transform: scale(.88); }
+.tabbar button.active { color: var(--accent); font-weight: 600; }
+/* Linien-Symbole (Stil angelehnt an Feather/Lucide-Icons) */
+.tab-icon {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform .15s;
+}
+.tab-icon .fill { fill: transparent; transition: fill .15s; }
+.tabbar button.active .tab-icon .fill { fill: color-mix(in srgb, currentColor 22%, transparent); }
 
 /* Detail-/Formular-Fenster */
 .sheet {

@@ -45,7 +45,7 @@
         <label for="google-key" class="muted">API-Schlüssel (optional, nur auf diesem Gerät gespeichert)</label>
         <input id="google-key" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…">
       </div>
-      <p class="muted center version">myLib · Version 11</p>
+      <p class="muted center version">myLib · Version 12</p>
     </section>
   </main>
 
@@ -53,11 +53,11 @@
   <button type="button" id="add-btn" class="fab" aria-label="Buch hinzufügen">+</button>
 
   <nav class="tabbar" id="tabbar">
-    <button type="button" data-tab="all" class="active"><span class="tab-icon">📚</span><span>Alle</span></button>
-    <button type="button" data-tab="wishlist"><span class="tab-icon">⭐</span><span>Wunsch</span></button>
-    <button type="button" data-tab="unread-owned"><span class="tab-icon">📖</span><span>Regal</span></button>
-    <button type="button" data-tab="read"><span class="tab-icon">✅</span><span>Gelesen</span></button>
-    <button type="button" data-tab="more"><span class="tab-icon">⚙️</span><span>Mehr</span></button>
+    <button type="button" data-tab="all" class="active"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true"><rect class="fill" x="3" y="4" width="4" height="16" rx="1"/><rect class="fill" x="9" y="7" width="4" height="13" rx="1"/><path class="fill" d="m15.2 7.6 3.8-1 3.4 12.9-3.8 1z"/><path d="M2 20.5h20"/></svg><span>Alle</span></button>
+    <button type="button" data-tab="wishlist"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon class="fill" points="12 2.5 15 8.6 21.6 9.6 16.8 14.2 17.9 20.8 12 17.7 6.1 20.8 7.2 14.2 2.4 9.6 9 8.6 12 2.5"/></svg><span>Wunsch</span></button>
+    <button type="button" data-tab="unread-owned"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path class="fill" d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></svg><span>Regal</span></button>
+    <button type="button" data-tab="read"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true"><circle class="fill" cx="12" cy="12" r="9.5"/><path d="m7.8 12.3 2.8 2.8 5.6-5.8"/></svg><span>Gelesen</span></button>
+    <button type="button" data-tab="more"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path class="fill" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Mehr</span></button>
   </nav>
 
   <dialog id="book-sheet" class="sheet">
